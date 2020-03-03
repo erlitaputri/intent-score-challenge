@@ -1,5 +1,6 @@
 package id.putraprima.skorbola;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
@@ -18,8 +19,6 @@ public class MatchActivity extends AppCompatActivity {
     private ImageView awaylogo;
     int home;
     int away;
-    private TextView scorehomeText;
-    private TextView scoreawayText;
 
     public static final String RESULT_KEY="result";
 
@@ -35,8 +34,6 @@ public class MatchActivity extends AppCompatActivity {
         awayScore = findViewById(R.id.score_away);
         homelogo = findViewById(R.id.home_logo);
         awaylogo = findViewById(R.id.away_logo);
-        scorehomeText = findViewById(R.id.score_home);
-        scoreawayText = findViewById(R.id.score_away);
 
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
@@ -50,29 +47,57 @@ public class MatchActivity extends AppCompatActivity {
             homeText.setText(extras.getString(MainActivity.HOMETEAM_KEY));
             awayText.setText(extras.getString(MainActivity.AWAYTEAM_KEY));
             //receive img
-
-            String scorername = extras.getString(ScorerActivity.SCORER_KEY);
-            scorehomeText.setText(scorername);
-            String username = extras.getString(ScorerActivity.SCORER_KEY);
-            scoreawayText.setText(scorername);
         }
     }
 
     //2.Tombol add score menambahkan memindah activity ke scorerActivity dimana pada scorer activity di isikan nama pencetak gol
     public void handleAddAway(View view) {
         Intent intent = new Intent(this, ScorerActivity.class);
-        startActivity(intent);
+        startActivityForResult(intent, 2);
     }
 
     public void handleAddHome(View view) {
         Intent intent = new Intent(this, ScorerActivity.class);
-        startActivity(intent);
+        startActivityForResult(intent, 1);
     }
 
     //3.Dari activity scorer akan mengirim kembali ke activity matchactivity otomatis nama pencetak gol dan skor bertambah +1
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
 
+        if (resultCode == 0){
+            return;
+        }
+
+        if(requestCode == 1){
+            if(data != null){
+                home++;
+                homeScore.setText(" "+home);
+            }
+        }
+        if(requestCode == 2){
+            if(data!= null){
+                away++;
+                awayScore.setText(" "+away);
+            }
+        }
+    }
 
     //4.Tombol Cek Result menghitung pemenang dari kedua tim dan mengirim nama pemenang beserta nama pencetak gol ke ResultActivity, jika seri di kirim text "Draw",
     public void handleResult(View view) {
+        String result = null;
+
+        if(away > home){
+            result = awayText.getText().toString();
+
+        }else if(away < home){
+            result = homeText.getText().toString();
+        }else{
+            result = "DRAW";
+        }
+        Intent intent = new Intent(this, ResultActivity.class);
+        intent.putExtra(RESULT_KEY, result);
+        startActivity(intent);
     }
 }
